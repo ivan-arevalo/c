@@ -1,0 +1,350 @@
+/*Programa codificado por Iván Arévalo*/
+/*Adivinar palabra - Ahorcado*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <locale.h>
+
+#define DIM 25
+
+int longitudCadena(char *);
+void leerPalabra(char *);
+void mostrarPalabra (char *);
+void mostrarCreditos (void);
+int jugarAhorcado (char *, int);
+void leerLetra(char *);
+int compararLetra (char *, int, char, char *);
+void mostrarProgreso (char *, int);
+void ahorcarMuneco(int);
+
+int main (void) {
+    setlocale(LC_ALL, "spanish");
+    char menu[]="\n  1)Introducir palabra\n  2)Jugar\n  3)Salir\n";
+    int opcion, longitud;
+    char palabra[DIM];//palabra a adivinar
+
+    palabra[0]=0;//cadena palabra vacia para obligar a introducir antes de jugar
+
+        do{
+    printf("\n\n  Juego del Ahorcado\n");
+    printf("  ------------------\n\n");
+    printf("%s", menu);
+    printf("\nIntroduce opción: ");
+    scanf("%d%*c", &opcion);
+        switch(opcion){
+        case 1:
+            leerPalabra(palabra);
+            longitud = longitudCadena(palabra);
+
+            printf("\n\nLa palabra introducida (de %i caracteres) es ",longitud);mostrarPalabra(palabra);
+            printf("\n");
+
+            printf("\nPulsa una tecla para continuar...");
+            getch();
+            system("cls");
+            break;
+        case 2:
+            system("cls");
+            if(jugarAhorcado==0)
+                printf("Para poder jugar tienes que introducir una palabra");
+            else
+            jugarAhorcado(palabra, longitud);
+            system("pause");
+            system("cls");
+            break;
+        case 3:
+            break;
+        default:
+            printf("Has introducido un valor no válido\n");
+            system("pause");
+            system("cls");
+        }
+    }while(opcion!=3);
+
+    system("PAUSE");
+
+    return 0;
+
+}/* Final main */
+
+
+int jugarAhorcado(char *palabra, int longitud)//juego
+{
+    if(palabra[0]==0)
+    {
+        printf("\n¡¡Tienes que introducir una palabra para poder jugar!!\n");
+        return 0;
+    }
+    int i, flag=0, flagcomp=0, intentos=0, marcador=0, fallos=0; //intent=contador de intentos, flag=terminar de pedir letras, marcador=acertaste la letra?
+    char arrayProgreso[DIM];//array almacenamiento caracteres que coincidan con la letra introducida
+    char letrasFalladas[DIM];
+    char letra, *l;
+
+    for(i=0;i<longitud; i++)
+        {
+            arrayProgreso[i]='\0';//relleno el array de progreso
+            letrasFalladas[i]='\0';
+        }
+
+
+    do{
+        int completado=0;// has completado la palabra?
+        intentos++;
+        l=&letra;
+
+        printf("\n");
+        leerLetra(l);
+
+        system("cls");
+
+        marcador = compararLetra(palabra, longitud, letra, arrayProgreso);
+
+        printf("\nIntento número %d", intentos);
+        printf("\nLa letra introducida es '%c'", letra);
+
+        if(marcador==0)
+        {
+            printf("\n¡Lástima! la letra no está en la palabra");
+            letrasFalladas[fallos] = letra;
+            fallos++;
+        }
+
+        else
+            printf("\nLa letra está en la palabra!!");
+
+        printf("\nTu progreso es: ");
+        mostrarProgreso(arrayProgreso, longitud);
+
+        printf("\nLas letras falladas son: ");
+        if(letrasFalladas[0] != '\0')
+        {
+            for (i=0; i<fallos+1; i++)
+            {
+                printf("%c ", letrasFalladas[i]);
+            }
+        }
+        printf("\n");
+
+
+        printf("Fallos restantes: %d",10-fallos);
+
+        printf("\n");
+        printf("\n");
+        ahorcarMuneco(fallos);
+
+        if(fallos==10)//si se acaban los intentos
+        {
+            flag=1;//salir del dowhile
+            flagcomp=-1; //-1 = perdido
+        }
+        for(i=0; i<longitud; i++)//si completas la palabra
+        {
+            if(arrayProgreso[i]!='\0')
+                completado++;
+            if(completado==longitud)
+            {
+                flag=1;//salir del dowhile
+                flagcomp=1;//1=ganado
+            }
+        }
+
+
+
+        //printf("\n\nPulsa una tecla para avanzar al siguiente turno...");
+        //getch();
+    }while(flag==0);
+
+    if(flagcomp==-1)
+    {
+        printf("\n\nTE HAN AHORCADO, OTRA VEZ SERÁ... La palabra era %s", palabra);
+        printf("\n");
+    }
+    if(flagcomp==1)
+    {
+        printf("\n\n¡¡¡TE HAS LIBERADO EN %d INTENTOS CON %d FALLOS RESTANTES!!! La palabra era %s\n", intentos, 10-fallos, palabra);
+        printf("\n");
+    }
+
+    mostrarCreditos();
+
+
+}
+
+int compararLetra(char *palabra, int longitud, char letra, char *progreso)//compara la letra introducida con la palabra para ver si hay alguna coincidencia
+{
+    int i, cont = 0;
+    for(i=0; i<longitud; i++)
+    {
+        if(letra == palabra[i])
+            {
+                cont++;//hay "letra" en la palabra?
+                progreso[i]=palabra[i];
+            }
+    }
+    if(cont!=0)
+       return 1;// return 1 si hay coincidencias
+    return 0;//return 0 si no hay coincidencias
+}
+
+void mostrarProgreso (char *progreso, int longitud) //progreso de la palabra durante el juego (muestra letras que ya hemos adivinado)
+{
+    int i;
+    for(i=0; i<longitud; i++)
+    {
+        if(progreso[i]!='\0')
+            printf(" %c ", progreso[i]);
+        else
+            printf(" _ ");
+    }
+}
+
+void ahorcarMuneco(int fallos)
+{
+    char brazopierna='\\';
+
+
+    if(fallos==0)
+    {
+        printf("                  \n");
+        printf("                  \n");
+        printf("                  \n");
+        printf("                  \n");
+        printf("                  \n");
+        printf("                  \n");
+    }
+    if(fallos==1)
+    {
+        printf("                  \n");
+        printf("                  \n");
+        printf("                  \n");
+        printf("                  \n");
+        printf("                  \n");
+        printf("   ___ ___        \n");
+    }
+    else if(fallos==2)
+    {
+        printf("                  \n");
+        printf("      |           \n");
+        printf("      |           \n");
+        printf("      |           \n");
+        printf("      |           \n");
+        printf("   ___:___        \n");
+    }
+    else if(fallos==3)
+    {
+        printf("      ________    \n");
+        printf("      |           \n");
+        printf("      |           \n");
+        printf("      |           \n");
+        printf("      |           \n");
+        printf("   ___:___        \n");
+    }
+    else if(fallos==4)
+    {
+        printf("      ________    \n");
+        printf("      |      |    \n");
+        printf("      |           \n");
+        printf("      |           \n");
+        printf("      |           \n");
+        printf("   ___:___        \n");
+    }
+    else if(fallos==5)
+    {
+        printf("      ________    \n");
+        printf("      |      |    \n");
+        printf("      |      0    \n");
+        printf("      |           \n");
+        printf("      |           \n");
+        printf("   ___:___        \n");
+    }
+    else if(fallos==6)
+    {
+        printf("      ________    \n");
+        printf("      |      |    \n");
+        printf("      |      0    \n");
+        printf("      |      |    \n");
+        printf("      |           \n");
+        printf("   ___:___        \n");
+    }
+    else if(fallos==7)
+    {
+        printf("      ________    \n");
+        printf("      |      |    \n");
+        printf("      |      0    \n");
+        printf("      |      |    \n");
+        printf("      |     /     \n");
+        printf("   ___:___        \n");
+    }
+    else if(fallos==8)
+    {
+        printf("      ________    \n");
+        printf("      |      |    \n");
+        printf("      |      0    \n");
+        printf("      |      |    \n");
+        printf("      |     / %c  \n", brazopierna);
+        printf("   ___:___        \n");
+    }
+    else if(fallos==9)
+    {
+        printf("      ________    \n");
+        printf("      |      |    \n");
+        printf("      |      0    \n");
+        printf("      |     /|    \n");
+        printf("      |     / %c  \n", brazopierna);
+        printf("   ___:___        \n");
+    }
+    else if(fallos==10)
+    {
+        printf("      ________    \n");
+        printf("      |      |    \n");
+        printf("      |      0    \n");
+        printf("      |     /|%c   \n", brazopierna);
+        printf("      |     / %c   \n", brazopierna);
+        printf("   ___:___        \n");
+    }
+
+}
+
+int longitudCadena (char *cadena)//halla la longitud de la palabra
+{
+    int j=0;
+    while (cadena[j] != '\0') {j++;}
+    return j;
+}
+
+void leerLetra(char *l)//lee letra de teclado
+{
+    int letra;
+    printf("\nIntroduce una letra: ");
+    fflush(stdin);
+    scanf("%c",&letra);
+    letra=tolower(letra);
+    *l=letra;
+}
+
+void leerPalabra (char *palabra)//lee la palabra del teclado
+{
+    int longitud,i;
+    printf("\nIntroduce una palabra para jugar al ahorcado: ");
+    gets(palabra);
+    longitud=strlen(palabra);
+    for(i = 0; i<longitud; i++)
+    {
+        palabra[i] = tolower(palabra[i]);
+    }
+}
+
+void mostrarPalabra(char *p)//mostrar palabra
+{
+    printf("%s", p);
+}
+
+
+void mostrarCreditos()//creditos del juego
+{
+    printf("\n\n   Este juego ha sido diseñado y codificado por Iván Arévalo\n");
+     printf("\n   Gracias por jugar\n\n");
+}
+
