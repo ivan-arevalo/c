@@ -1,0 +1,276 @@
+#include <stdio.h>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <time.h>
+#include <locale.h>
+
+#define DIMNOMBRE 20
+#define DIMFILA 30
+
+/* Programa ADIVINA EL NÚMERO (con tabla de récords), por Iván Arévalo */
+
+int main(void)
+{
+    setlocale(LC_ALL, "spanish");
+    int aleatorio, num, diferencia, intentosActuales, lugarRecord, contAyuda, flag,primero=0,i, guardarRecord; //intentosActuales = intentos jugada actual, lugarRecord=lugar record nuevo, contAyuda=ayuda en la transferencia de records
+    char opc, nombreNew[DIMNOMBRE];
+    srand(time(NULL));
+    aleatorio = rand() % 10001;
+    //variables archivo
+    FILE * records;
+    FILE * helpFile;
+    char cadena[DIMFILA]; //fila mas larga del archivo records (para copia)
+    char nombre[DIMNOMBRE]; //nombre de la tabla de records
+    int intentos; //intentos tabla de records
+
+    intentosActuales=0;
+  
+  do{
+    	do{
+        system("cls");
+        printf("\n\n ADIVINA EL NÚMERO, POR IVÁN ARÉVALO ");
+        printf("\n ===================================\n\n");
+        printf(" J) jugar");
+        printf("\n\n I) instrucciones");
+        printf("\n\n R) records");
+        printf("\n\n S) salir\n\n");
+    
+        printf("\nIntroduce opción: ");
+        scanf("%c", &opc);
+        opc=toupper(opc);
+    	}while((opc!='j')&&(opc!='i')&&(opc!='r')&&(opc!='s')&&(opc!='J')&&(opc!='I')&&(opc!='R')&&(opc!='S'));
+       switch(opc){
+
+        case 'J':
+            //JUEGO ADIVINA EL NUMERO
+            intentosActuales=0;
+                do
+                {
+                   intentosActuales = intentosActuales + 1;
+                   flag = 0;
+                   do
+                    {
+                        if(flag==0)
+                        {
+                            //printf("\n\nPRUEBAS, el numero aleatorio es: %d", aleatorio);
+                            printf("\n\nIntroduce un número: ");
+                        }
+
+                        else
+                            printf("Introduce un número entre 1 y 10.000: ");
+                        scanf("%d", &num);
+                        flag = 1;
+                    }while((num < 1) || (num > 10000));
+
+                   diferencia = abs(num - aleatorio);
+
+                   if(diferencia > 1000)
+                        printf("\nMuy frío");
+                   else if(diferencia > 400 && diferencia <= 1000)
+                        printf("\nFrío");
+                   else if(diferencia > 100 && diferencia <= 400)
+                        printf("\nTemplado");
+                   else if(diferencia > 10 && diferencia <= 100)
+                        printf("\nCaliente");
+                   else if(diferencia >= 1 && diferencia <= 10)
+                        printf("\nMuy caliente");
+                   else
+                   {
+
+                        records=fopen("records.txt", "r");
+                        if (records==NULL)
+                        {
+                            fputs(" ERROR: El fichero no pudo abrirse\n",stderr);
+                            exit (1);
+                        }
+                        fscanf (records, "%[A-Z]*%d\n", nombre, &intentos);//leer quien tiene el mayor record
+                        fclose(records);
+
+                        printf("\n\nACERTASTE!!!, el número era %d\n", aleatorio);
+                        primero=0;
+                        if(intentos>intentosActuales)
+                        {
+                            printf ("Has establecido un nuevo récord en %d intentos, enhorabuena!", intentosActuales);
+                            printf("\nEl récord anterior lo tenía: %s con %d intentos\n\n", nombre, intentos);
+                            primero=1;
+                        }
+                        else
+                        {
+                            printf("\nHas acertado en %d intentos\n", intentosActuales);
+                            printf("\nEl récord lo tiene: %s con %d intentos\n\n", nombre, intentos);
+                        }
+
+                        //recogemos el nick nuevo
+                        printf("\n Introduce nombre para guardar récord (sin espacios): ");
+                        fflush(stdin);
+                        gets(nombreNew);
+                        nombreNew[DIMNOMBRE]=strupr(nombreNew);
+
+                       records=fopen("records.txt", "r");
+                       helpFile=fopen("helpFile.txt", "w");//creo un archivo secundario para guardar los records en orden de intentos
+                       if (records==NULL)
+                        {
+                            fputs(" ERROR: El fichero no pudo abrirse\n",stderr);
+                            exit (1);
+                        }
+                        if (helpFile==NULL)
+                        {
+                            fputs(" ERROR: El fichero no pudo abrirse\n",stderr);
+                            exit (1);
+                        }
+
+                       while (fgets(cadena, DIMFILA, records) != NULL)
+                        {
+                            fputs(cadena, helpFile); //copiar records a helpFile
+                        }
+                        lugarRecord=0;
+                        flag =0;
+                        fclose(records);
+                        fclose(helpFile);
+
+                        records=fopen("records.txt", "r");
+                        if (records==NULL)
+                        {
+                            fputs(" ERROR: El fichero no pudo abrirse\n",stderr);
+                            exit (1);
+                        }
+                        while (feof(records) == 0 && flag != -1)//averiguar posicion nuevo score
+                        {
+
+                        fscanf (records, "%[A-Z]*%d\n", nombre, &intentos); //%[a-z0-9] (alfanumericos)
+                        if(intentos>intentosActuales)//si intentos (de la tabla) es mas que los intentos de la partida, debe ocupar ese lugar
+                        {
+                            flag=-1;//por lo tanto, salir del bucle
+                        }
+                        else
+                            lugarRecord=lugarRecord+1;//posicion-1 en la que habra que poner el nuevo score
+                        }
+                        fclose(records);
+
+                        //printf("este es lugarRecord, la posicion del nuevo record (-1): %d",lugarRecord);
+
+                        //por ultimo, se guardan todos (actualizados)
+                        records=fopen("records.txt", "w+");
+                        helpFile=fopen("helpFile.txt", "r");
+                        if (records==NULL)
+                        {
+                            fputs(" ERROR: El fichero no pudo abrirse\n",stderr);
+                            exit (1);
+                        }
+                        if (helpFile==NULL)
+                        {
+                            fputs(" ERROR: El fichero no pudo abrirse\n",stderr);
+                            exit (1);
+                        }
+
+                        i=0;
+                        while (fgets(cadena, DIMFILA, helpFile) != NULL && i<lugarRecord)//copiamos los necesarios antes del nuevo desde helpFile a records
+                        {
+                            fputs(cadena, records); //copiar records a helpFile
+                            i=i+1;
+                        }
+
+                        fclose(records);
+                        fclose(helpFile);
+
+                        //copiamos el nuevo en records
+                        records=fopen("records.txt", "a");
+                        if (records==NULL)
+                        {
+                            fputs(" ERROR: El fichero no pudo abrirse\n",stderr);
+                            exit (1);
+                        }
+                        fprintf(records, "%s*%d\n", nombreNew, intentosActuales);
+                        fclose(records);
+
+                        //copiamos el resto desde helpFile a records
+                        contAyuda=0;
+
+                        records=fopen("records.txt", "a");
+                        helpFile=fopen("helpFile.txt", "r");
+                        if (records==NULL)
+                        {
+                            fputs(" ERROR: El fichero no pudo abrirse\n",stderr);
+                            exit (1);
+                        }
+                        if (helpFile==NULL)
+                        {
+                            fputs(" ERROR: El fichero no pudo abrirse\n",stderr);
+                            exit (1);
+                        }
+
+                        while (fgets(cadena, DIMFILA, helpFile) != NULL)
+                        {
+                        if(contAyuda>=lugarRecord)
+                            fputs(cadena, records); //copiar records a helpFile
+                        contAyuda=contAyuda+1;
+                        }
+
+
+                        fclose(records);
+                        fclose(helpFile);
+
+                       system("PAUSE");
+}
+                   if(num<aleatorio)
+                   {
+                        printf("\n\nEl número que he pensado es mayor");
+                        printf("\n\n\n==========================\n");
+                   }
+
+                   else if(num>aleatorio)
+                   {
+                        printf("\n\nEl número que he pensado es menor");
+                        printf("\n\n\n==========================\n");
+                   }
+                }
+                while(num != aleatorio);
+            break;
+
+        case 'I':
+            printf("\n INSTRUCCIONES DE ADIVINA EL NÚMERO");
+            printf("\n\n El programa pensará un numero entre 1 y 10000, tu objetivo es adivinarlo\n");
+            printf("\n Si estás muy frío, tu número dista mas de 1000 unidades del número pensado\n");
+            printf("\n Si estás frío, tu número dista entre 1000 y 400 unidades del número pensado\n");
+            printf("\n Si estás templado, tu número dista entre 400 y 100 unidades del número pensado\n");
+            printf("\n Si estás caliente, tu número dista entre 100 y 10 unidades del número pensado\n");
+            printf("\n Si estás muy caliente, tu número dista menos de 10 unidades del número pensado \n\n");
+            system("pause");
+            break;
+
+        case 'R':
+            printf("\n LISTA DE RECORDS\n\n");
+            printf(" POS                NICK      INTENTOS\n");
+
+            records=fopen("records.txt", "r");
+            if (records==NULL)
+            {
+              fputs(" ERROR: El fichero no existe o no pudo abrirse\n",stderr);
+              exit (1);
+            }
+            intentosActuales=0;
+            while (feof(records) == 0 && intentosActuales != 20)//imprimir records hasta que se acabe el fichero o 20 max
+            {
+              fscanf (records, "%[A-Z]*%d\n", nombre, &intentos);
+              printf ("%4d %20.15s %12d", intentosActuales+1, nombre, intentos);
+              printf("\n");
+              intentosActuales=intentosActuales+1;
+            }
+            fclose(records);
+            printf("\n");
+
+
+            system("pause");
+
+
+            break;
+
+		case 'S':
+			break;
+	}printf("\n");
+
+}while(opc!='S');
+
+	return 0;
+}
