@@ -226,7 +226,7 @@ int main(void)
                         fclose(helpFile);
 
                        system("PAUSE");
-}
+		   }
                    if(num<aleatorio)
                    {
                         printf("\n\nEl número que he pensado es mayor");
@@ -292,7 +292,7 @@ int main(void)
 			break;
 	}printf("\n");
 
-}while(opc!='S');
+   }while(opc!='S');
 
 	return 0;
 }
