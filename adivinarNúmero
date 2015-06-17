@@ -22,7 +22,7 @@ int main(void)
     FILE * helpFile;
     char cadena[DIMFILA]; //fila mas larga del archivo records (para copia)
     char nombre[DIMNOMBRE]; //nombre de la tabla de records
-    int intentos; //intentos tabla de records
+    int intentos; //intentos de la tabla de records
 
     intentosActuales=0;
 
